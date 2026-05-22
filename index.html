@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>身故理賠文件檢核</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<style>
+:root {
+  --bg: #F7F6F3;
+  --card: #FFFFFF;
+  --card-border: rgba(0,0,0,0.08);
+  --text-1: #1A1A1A;
+  --text-2: #6B6B6B;
+  --text-3: #9E9E9E;
+  --accent: #1D6B4F;
+  --accent-light: #E8F5EE;
+  --accent-mid: #2D9B6E;
+  --blue: #2563EB;
+  --blue-light: #EFF6FF;
+  --amber: #B45309;
+  --amber-light: #FEF3C7;
+  --red: #DC2626;
+  --red-light: #FEF2F2;
+  --coral: #D85A30;
+  --coral-light: #FFF4EE;
+  --divider: rgba(0,0,0,0.06);
+  --radius: 16px;
+  --radius-sm: 10px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.06), 0 2px 4px rgba(0,0,0,0.04);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg);
+  color: var(--text-1);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  padding: 24px 16px 60px;
+}
+
+#app {
+  width: 100%;
+  max-width: 440px;
+}
+
+/* Header */
+.header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+.header .logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px; height: 52px;
+  background: var(--accent);
+  border-radius: 14px;
+  margin-bottom: 16px;
+}
+.header .logo i { font-size: 26px; color: #fff; }
+.header h1 {
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--text-1);
+  margin-bottom: 6px;
+  letter-spacing: -0.3px;
+}
+.header p {
+  font-size: 14px;
+  color: var(--text-2);
+  line-height: 1.6;
+}
+
+/* Progress */
+.progress-wrap { margin-bottom: 28px; }
+.progress-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.progress-info .step-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--accent);
+  background: var(--accent-light);
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+.progress-info .step-count {
+  font-size: 12px;
+  color: var(--text-3);
+}
+.progress-bar {
+  height: 4px;
+  background: rgba(0,0,0,0.06);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--accent-mid));
+  border-radius: 4px;
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Question Card */
+.q-card {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  padding: 28px 24px;
+  box-shadow: var(--shadow-sm);
+  animation: slideUp 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.q-number {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 12px;
+}
+.q-text {
+  font-size: 17px;
+  font-weight: 500;
+  color: var(--text-1);
+  line-height: 1.6;
+  margin-bottom: 8px;
+}
+.q-hint {
+  font-size: 13px;
+  color: var(--text-2);
+  line-height: 1.6;
+  margin-bottom: 20px;
+  padding: 10px 12px;
+  background: var(--amber-light);
+  border-radius: var(--radius-sm);
+  border-left: 3px solid var(--amber);
+}
+.q-hint-plain {
+  margin-bottom: 24px;
+}
+
+/* Buttons */
+.btn-row {
+  display: flex;
+  gap: 10px;
+}
+.btn-col {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.btn {
+  flex: 1;
+  padding: 14px 20px;
+  border: 1.5px solid var(--card-border);
+  border-radius: var(--radius-sm);
+  background: var(--card);
+  color: var(--text-1);
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.btn:hover {
+  border-color: var(--accent);
+  background: var(--accent-light);
+  color: var(--accent);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+.btn:active { transform: translateY(0); }
+.btn i { font-size: 18px; }
+
+/* Back */
+.back-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin-top: 14px;
+  padding: 10px;
+  width: 100%;
+  border: none;
+  background: transparent;
+  color: var(--text-3);
+  font-family: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: all 0.2s;
+}
+.back-btn:hover { color: var(--text-2); background: rgba(0,0,0,0.03); }
+.back-btn i { font-size: 15px; }
+
+/* Result */
+.result-card {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+  animation: slideUp 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.result-header {
+  padding: 24px 24px 20px;
+  border-bottom: 1px solid var(--divider);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.result-header .icon-circle {
+  width: 40px; height: 40px;
+  background: var(--accent-light);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.result-header .icon-circle i { font-size: 20px; color: var(--accent); }
+.result-header .info h2 { font-size: 17px; font-weight: 600; color: var(--text-1); }
+.result-header .info p { font-size: 13px; color: var(--text-2); margin-top: 2px; }
+
+.doc-group { padding: 0 24px; }
+.doc-group:last-of-type { padding-bottom: 8px; }
+.doc-group-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent);
+  letter-spacing: 0.5px;
+  padding: 16px 0 10px;
+  border-bottom: 1px solid var(--divider);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.doc-group-title i { font-size: 15px; }
+
+.doc-item {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--divider);
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+.doc-item:last-child { border-bottom: none; }
+.doc-item .check-icon {
+  width: 20px; height: 20px;
+  border: 1.5px solid var(--card-border);
+  border-radius: 5px;
+  flex-shrink: 0;
+  margin-top: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.doc-item .check-icon i { font-size: 13px; color: transparent; }
+.doc-item .doc-content { flex: 1; }
+.doc-item .doc-name {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--text-1);
+  line-height: 1.5;
+}
+.doc-item .doc-note {
+  font-size: 12px;
+  color: var(--text-2);
+  line-height: 1.5;
+  margin-top: 3px;
+}
+
+.doc-item.status-ok .doc-name { color: var(--accent); }
+.doc-item.status-ok .check-icon { border-color: var(--accent); background: var(--accent-light); }
+.doc-item.status-ok .check-icon i { color: var(--accent); }
+.doc-item.status-fail .doc-name { color: var(--red); }
+.doc-item.status-fail .check-icon { border-color: var(--red); background: var(--red-light); }
+.doc-item.status-fail .check-icon i { color: var(--red); }
+
+/* Shipping Info */
+.ship-info {
+  margin: 20px 24px 24px;
+  padding: 16px;
+  background: var(--bg);
+  border-radius: var(--radius-sm);
+}
+.ship-info .row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 6px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.ship-info .row:last-child { margin-bottom: 0; }
+.ship-info .row .label {
+  font-weight: 500;
+  color: var(--text-2);
+  white-space: nowrap;
+}
+.ship-info .row .value { color: var(--text-1); }
+
+/* Restart */
+.restart-btn {
+  margin-top: 20px;
+  padding: 14px;
+  width: 100%;
+  border: 1.5px solid var(--card-border);
+  border-radius: var(--radius-sm);
+  background: var(--card);
+  color: var(--text-2);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.2s;
+  box-shadow: var(--shadow-sm);
+}
+.restart-btn:hover { background: var(--bg); color: var(--text-1); }
+.restart-btn i { font-size: 16px; }
+
+/* Print */
+.print-btn {
+  margin-top: 10px;
+  padding: 14px;
+  width: 100%;
+  border: 1.5px solid var(--accent);
+  border-radius: var(--radius-sm);
+  background: var(--accent);
+  color: #fff;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+.print-btn:hover { background: #165A42; }
+.print-btn i { font-size: 16px; }
+
+@media print {
+  body { background: #fff; padding: 0; }
+  .restart-btn, .print-btn, .back-btn { display: none !important; }
+  .result-card { box-shadow: none; border: 1px solid #ddd; }
+  .doc-item .check-icon { border-color: #999; }
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+const questions = [
+  { id:'q1', text:'是否有身故前尚未申請的醫療保險金？', hint:'屬於被保險人遺產，需全體法定繼承人簽署推派同意書', group:1 },
+  { id:'q2', text:'被保險人是否有投保含「癌症身故金」的保單？', hint:'', group:1 },
+  { id:'q2_1', text:'死亡證明書「直接原因」欄位（甲／乙／丙／丁任一）是否載明癌症？', hint:'注意：不能只出現在「其他對於死亡有影響之疾病或身體狀況」欄位', group:1, parent:'q2', showIf:true },
+  { id:'q3', text:'是否有未到期保費需退還？', hint:'屬於要保人資產', group:1 },
+  { id:'q3_1', text:'退費金額是否在 5,000 元（含）以下？', hint:'', group:1, parent:'q3', showIf:true },
+  { id:'q4', text:'被保險人是否為意外身故？', hint:'', group:1 },
+  { id:'q5', text:'被保險人是否於國外身故？或身故前醫療發生在國外？', hint:'', group:1 },
+  { id:'q6', text:'保單幣別為何？', hint:'若同時持有台幣與外幣保單請選「都有」', group:1, options:['台幣','外幣','都有'] },
+  { id:'q7', text:'所有理賠項目的受益人中，是否包含「法定繼承人」？', hint:'', group:2 },
+  { id:'q8', text:'繼承人中是否有人於民國 86 年以前出生？', hint:'', group:2, parent:'q7_auto', showIf:true },
+  { id:'q9', text:'繼承人中是否有人於民國 86 年以後出生，或曾更換姓名？', hint:'', group:2, parent:'q7_auto', showIf:true },
+  { id:'q10', text:'繼承人／受益人中是否有人已身故？', hint:'', group:2, parent:'q7_auto', showIf:true },
+  { id:'q11', text:'受益人／繼承人中是否有未滿 7 歲者？', hint:'', group:3 },
+  { id:'q12', text:'受益人／繼承人中是否有 7 歲以上未滿 18 歲者？', hint:'', group:3 },
+  { id:'q13', text:'受益人／繼承人中是否有受監護宣告或輔助宣告者？', hint:'', group:3 },
+  { id:'q14', text:'是否有人無法親簽（只能蓋手印）？', hint:'', group:3 },
+  { id:'q15', text:'受益人／繼承人中是否有非中華民國國籍者？', hint:'', group:3 },
+  { id:'q16', text:'保單正本是否還在？', hint:'', group:3 },
+];
+
+let answers = {};
+let currentIdx = 0;
+let history = [];
+
+const groupNames = { 1:'案件範圍', 2:'繼承人身份', 3:'簽署與身份狀況' };
+const groupIcons = { 1:'ti-file-text', 2:'ti-users', 3:'ti-writing-sign' };
+
+function getVisibleQuestions() {
+  const vis = [];
+  for (const q of questions) {
+    if (q.parent === 'q7_auto') {
+      if (!(answers.q1 === true || answers.q7 === true)) continue;
+    } else if (q.parent) {
+      if (answers[q.parent] !== q.showIf) continue;
+    }
+    if (q.id === 'q7' && answers.q1 === true) {
+      answers.q7 = true;
+      continue;
+    }
+    vis.push(q);
+  }
+  return vis;
+}
+
+function render() {
+  const vis = getVisibleQuestions();
+  if (currentIdx >= vis.length) { renderResult(); return; }
+  const q = vis[currentIdx];
+  const total = vis.length;
+  const pct = Math.round((currentIdx / total) * 100);
+  const app = document.getElementById('app');
+
+  const hintHTML = q.hint
+    ? '<div class="q-hint">' + q.hint + '</div>'
+    : '<div class="q-hint-plain"></div>';
+
+  let btnsHTML = '';
+  if (q.options) {
+    btnsHTML = '<div class="btn-col">';
+    q.options.forEach(opt => {
+      btnsHTML += '<button class="btn" onclick="doAnswer(\'' + q.id + '\',\'' + opt + '\')">' + opt + '</button>';
+    });
+    btnsHTML += '</div>';
+  } else {
+    btnsHTML = '<div class="btn-row">' +
+      '<button class="btn" onclick="doAnswer(\'' + q.id + '\',true)"><i class="ti ti-check"></i>是</button>' +
+      '<button class="btn" onclick="doAnswer(\'' + q.id + '\',false)"><i class="ti ti-x"></i>否</button></div>';
+  }
+
+  const backHTML = currentIdx > 0
+    ? '<button class="back-btn" onclick="goBack()"><i class="ti ti-arrow-left"></i>上一題</button>'
+    : '';
+
+  app.innerHTML =
+    '<div class="header">' +
+      '<div class="logo"><i class="ti ti-file-check"></i></div>' +
+      '<h1>身故理賠文件檢核</h1>' +
+      '<p>逐步回答問題，自動產出所需文件清單</p>' +
+    '</div>' +
+    '<div class="progress-wrap">' +
+      '<div class="progress-info">' +
+        '<span class="step-label"><i class="ti ' + groupIcons[q.group] + '" style="font-size:13px;vertical-align:-1px;margin-right:3px"></i>' + groupNames[q.group] + '</span>' +
+        '<span class="step-count">' + (currentIdx + 1) + ' / ' + total + '</span>' +
+      '</div>' +
+      '<div class="progress-bar"><div class="progress-fill" style="width:' + pct + '%"></div></div>' +
+    '</div>' +
+    '<div class="q-card">' +
+      '<div class="q-number">問題 ' + (currentIdx + 1) + '</div>' +
+      '<div class="q-text">' + q.text + '</div>' +
+      hintHTML +
+      btnsHTML +
+    '</div>' +
+    backHTML;
+}
+
+function doAnswer(id, val) {
+  history.push({ idx: currentIdx, answers: JSON.parse(JSON.stringify(answers)) });
+  answers[id] = val;
+  currentIdx++;
+  const vis = getVisibleQuestions();
+  if (currentIdx > vis.length) currentIdx = vis.length;
+  render();
+}
+
+function goBack() {
+  if (history.length === 0) return;
+  const prev = history.pop();
+  currentIdx = prev.idx;
+  answers = prev.answers;
+  render();
+}
+
+function renderResult() {
+  const docs = [];
+  function add(group, text, note, status) {
+    docs.push({ group, text, note: note || '', status: status || '' });
+  }
+
+  // 基礎必備
+  add('基礎必備文件', '理賠申請書正本（所有受益人／繼承人簽名）');
+  add('基礎必備文件', '死亡證明書正本');
+  add('基礎必備文件', '除戶戶籍謄本正本（記事欄載明身故日期）');
+  add('基礎必備文件', '受益人／繼承人之官方身分證明文件影本', '有照片且未過期：身分證、護照、居留證、駕照皆可');
+
+  // 金流
+  const currency = answers.q6;
+  if (currency === '台幣' || currency === '都有') {
+    add('金流支付文件', '【台幣】存摺影本', '受益人或法定繼承人帳戶');
+  }
+  if (currency === '外幣' || currency === '都有') {
+    add('金流支付文件', '【外幣】存摺影本', '受益人或法定繼承人帳戶');
+    add('金流支付文件', '英文戶名證明或護照影本', '供核對外幣帳戶戶名');
+  }
+
+  // 身故前醫療
+  if (answers.q1 === true) {
+    add('身故前醫療保險金', '診斷書');
+    add('身故前醫療保險金', '醫療收據');
+    add('身故前醫療保險金', '推派同意書（正式）', '屬被保險人遺產，需全體繼承人簽署');
+  }
+
+  // 癌症身故金
+  if (answers.q2 === true) {
+    if (answers.q2_1 === true) {
+      add('癌症身故金', '符合請領條件 — 文件同身故保險金', '死因直接原因欄已載明癌症', 'ok');
+    } else {
+      add('癌症身故金', '不符合請領條件', '死因直接原因欄（甲/乙/丙/丁）未載明癌症', 'fail');
+    }
+  }
+
+  // 未到期保費
+  if (answers.q3 === true) {
+    const isSimple = answers.q1 !== true && answers.q3_1 === true;
+    if (isSimple) {
+      add('未到期保費退還', '簡式推派同意書', '無身故前醫療且金額 ≤ 5,000 元');
+    } else {
+      const reason = answers.q1 === true ? '因有身故前醫療保險金，須使用正式版本' : '金額超過 5,000 元';
+      add('未到期保費退還', '正式推派同意書', reason);
+    }
+  }
+
+  // 意外
+  if (answers.q4 === true) {
+    add('意外身故', '意外傷害事故證明文件', '如警方證明文件');
+  }
+
+  // 國外
+  if (answers.q5 === true) {
+    add('國外事故', '護照出入境資料影本');
+    add('國外事故', '完整英文病歷資料');
+  }
+
+  // 繼承
+  const hasHeir = answers.q1 === true || answers.q7 === true;
+  if (hasHeir) {
+    add('繼承相關文件', '繼承系統表', '下方須簽名，可免蓋章');
+    if (answers.q8 === true) add('繼承相關文件', '被保險人之「原始全戶戶籍謄本手抄本」（含遷出戶）', '繼承人有民國 86 年以前出生者');
+    if (answers.q9 === true) add('繼承相關文件', '受益人之「新版現戶全戶戶籍謄本」', '繼承人有民國 86 年以後出生或更換姓名者');
+    if (answers.q10 === true) add('繼承相關文件', '已故繼承人／受益人之死亡證明或除戶戶籍謄本正本');
+  }
+
+  // 特殊身份
+  if (answers.q11 === true) {
+    add('特殊身份處理', '未滿 7 歲：法定代理人代為填寫及簽章');
+    add('特殊身份處理', '受益人與法定代理人之關係證明');
+    add('特殊身份處理', '法定代理人官方身分證明文件影本', '有照片且未過期');
+  }
+  if (answers.q12 === true) {
+    add('特殊身份處理', '7～17 歲：本人＋法定代理人皆須簽名');
+    if (answers.q11 !== true) {
+      add('特殊身份處理', '受益人與法定代理人之關係證明');
+      add('特殊身份處理', '法定代理人官方身分證明文件影本', '有照片且未過期');
+    }
+  }
+  if (answers.q13 === true) {
+    add('特殊身份處理', '法院監護／輔助宣告裁定書');
+    add('特殊身份處理', '監護人或輔助人代為填寫及簽章');
+    add('特殊身份處理', '監護人／輔助人官方身分證明文件影本', '有照片且未過期');
+  }
+
+  // 簽署
+  if (answers.q14 === true) {
+    add('簽署注意事項', '蓋手印處須另蓋章');
+    add('簽署注意事項', '需兩位見證人簽名');
+  }
+
+  // 外國籍
+  if (answers.q15 === true) {
+    add('特殊身份處理', '護照影本（非中華民國國籍者）');
+  }
+
+  // 保單
+  if (answers.q16 === false) {
+    add('保單處理', '於理賠申請書勾選「遺失切結」');
+  } else {
+    add('保單處理', '保單正本');
+  }
+
+  // Group
+  const grouped = {};
+  const groupOrder = [];
+  docs.forEach(d => {
+    if (!grouped[d.group]) { grouped[d.group] = []; groupOrder.push(d.group); }
+    grouped[d.group].push(d);
+  });
+
+  const totalDocs = docs.filter(d => d.status !== 'fail').length;
+
+  const resultGroupIcons = {
+    '基礎必備文件': 'ti-file-text',
+    '金流支付文件': 'ti-credit-card',
+    '身故前醫療保險金': 'ti-stethoscope',
+    '癌症身故金': 'ti-report-medical',
+    '未到期保費退還': 'ti-receipt-refund',
+    '意外身故': 'ti-alert-triangle',
+    '國外事故': 'ti-plane',
+    '繼承相關文件': 'ti-users',
+    '特殊身份處理': 'ti-user-exclamation',
+    '簽署注意事項': 'ti-writing-sign',
+    '保單處理': 'ti-file-certificate',
+  };
+
+  let html = '<div class="header">' +
+    '<div class="logo"><i class="ti ti-circle-check"></i></div>' +
+    '<h1>文件清單已產出</h1>' +
+    '<p>依據您的回答，共需準備 ' + totalDocs + ' 項文件</p>' +
+  '</div>';
+
+  html += '<div class="result-card">';
+  html += '<div class="result-header"><div class="icon-circle"><i class="ti ti-checklist"></i></div><div class="info"><h2>所需文件清單</h2><p>請逐項備齊後寄出</p></div></div>';
+
+  groupOrder.forEach(g => {
+    const icon = resultGroupIcons[g] || 'ti-folder';
+    html += '<div class="doc-group"><div class="doc-group-title"><i class="ti ' + icon + '"></i>' + g + '</div>';
+    grouped[g].forEach(d => {
+      const statusCls = d.status ? ' status-' + d.status : '';
+      const checkIcon = d.status === 'ok' ? 'ti-check' : d.status === 'fail' ? 'ti-x' : 'ti-check';
+      html += '<div class="doc-item' + statusCls + '">' +
+        '<div class="check-icon"><i class="ti ' + checkIcon + '"></i></div>' +
+        '<div class="doc-content"><div class="doc-name">' + d.text + '</div>' +
+        (d.note ? '<div class="doc-note">' + d.note + '</div>' : '') +
+        '</div></div>';
+    });
+    html += '</div>';
+  });
+
+  html += '<div class="ship-info">' +
+    '<div class="row"><span class="label">收件單位</span><span class="value">凱基人壽 保單作業部</span></div>' +
+    '<div class="row"><span class="label">收件地址</span><span class="value">40355 台中市西區五權路 2-107 號 11 樓</span></div>' +
+    '<div class="row"><span class="label">寄送方式</span><span class="value">文件齊全後請以郵局掛號寄回</span></div>' +
+  '</div>';
+
+  html += '</div>';
+
+  html += '<button class="print-btn" onclick="window.print()"><i class="ti ti-printer"></i>列印清單</button>';
+  html += '<button class="restart-btn" onclick="restart()"><i class="ti ti-refresh"></i>重新檢核</button>';
+
+  document.getElementById('app').innerHTML = html;
+}
+
+function restart() {
+  answers = {};
+  currentIdx = 0;
+  history = [];
+  render();
+}
+
+render();
+</script>
+</body>
+</html>
