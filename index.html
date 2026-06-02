@@ -379,6 +379,7 @@
       { id: "q2_1", section: "案件範圍", title: "死亡證明書「直接原因」欄位是否載明癌症？", hint: "甲／乙／丙／丁任一欄位需載明癌症；不能只在「其他對於死亡有影響之疾病或身體狀況」。", options: yesNo(), show: a => a.q2 === "yes" },
       { id: "q3", section: "案件範圍", title: "是否有未到期保費需退還？", hint: "屬要保人資產。", options: yesNo() },
       { id: "q3_1", section: "案件範圍", title: "退費金額是否在 5,000 元（含）以下？", options: yesNo(), show: a => a.q3 === "yes" },
+      { id: "q3_heir_claim", section: "案件範圍", title: "未到期保費是否須由要保人之法定繼承人請領？", hint: "若要保人本人可直接請領，通常不需簡式推派同意書。", options: yesNo(), show: a => a.q1 === "no" && a.q3 === "yes" && a.q3_1 === "yes" },
       { id: "q4", section: "案件範圍", title: "被保險人是否為意外身故？", options: yesNo() },
       { id: "q5", section: "案件範圍", title: "被保險人是否於國外身故？或身故前醫療發生在國外？", options: yesNo() },
       { id: "q6", section: "案件範圍", title: "保單幣別為何？", options: [{ label: "台幣", value: "twd" }, { label: "外幣", value: "fx" }, { label: "都有", value: "both" }] },
@@ -502,7 +503,9 @@
 
       if (a.q3 === "yes") {
         if (a.q1 === "no" && a.q3_1 === "yes") {
-          addDoc(groups, "案件情境", "推派同意書（簡式）", "無身故前醫療且退費金額 5,000 元（含）以下");
+          if (a.q3_heir_claim === "yes") {
+            addDoc(groups, "案件情境", "推派同意書（簡式）", "未到期保費須由要保人之法定繼承人請領，且退費金額 5,000 元（含）以下");
+          }
         } else {
           const reason = a.q1 === "yes" ? "有身故前醫療保險金" : "退費金額超過 5,000 元";
           addDoc(groups, "案件情境", "推派同意書（正式）", reason);
@@ -543,7 +546,7 @@
       const keys = ["claimForm"];
       if (hasLegalHeir(a)) keys.push("inheritance");
       if (a.q1 === "yes" || (a.q3 === "yes" && (a.q1 === "yes" || a.q3_1 === "no"))) keys.push("consentFormal");
-      if (a.q3 === "yes" && a.q1 === "no" && a.q3_1 === "yes") keys.push("consentSimple");
+      if (a.q3 === "yes" && a.q1 === "no" && a.q3_1 === "yes" && a.q3_heir_claim === "yes") keys.push("consentSimple");
       return Array.from(new Set(keys));
     }
 
