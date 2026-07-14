@@ -86,6 +86,12 @@
       font-weight: 700;
       margin-bottom: 8px;
     }
+    .prompt-area {
+      min-height: 168px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+    }
     .question {
       font-size: 23px;
       line-height: 1.35;
@@ -101,7 +107,14 @@
     .options {
       display: grid;
       gap: 10px;
-      margin-top: 18px;
+      margin-top: 4px;
+      grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+    }
+    .options.two-options {
+      grid-template-columns: 1fr 1fr;
+    }
+    .options.currency-options {
+      grid-template-columns: 1fr 1fr;
     }
     button {
       font: inherit;
@@ -116,13 +129,37 @@
       padding: 14px 16px;
       background: var(--soft);
       color: var(--ink);
-      text-align: left;
+      text-align: center;
       border: 1px solid var(--line);
       font-weight: 700;
     }
-    .option:active, .option:hover {
+    .option[data-value="yes"],
+    .option[data-value="twd"] {
+      background: var(--brand);
       border-color: var(--brand);
-      background: #e9f7f5;
+      color: #fff;
+    }
+    .option[data-value="no"],
+    .option[data-value="fx"] {
+      background: #b42318;
+      border-color: #b42318;
+      color: #fff;
+    }
+    .option[data-value="both"] {
+      grid-column: 1 / -1;
+      background: #344054;
+      border-color: #344054;
+      color: #fff;
+    }
+    .option:active {
+      border-color: var(--brand);
+      filter: brightness(.96);
+    }
+    @media (hover: hover) and (pointer: fine) {
+      .option:hover {
+        border-color: var(--brand);
+        filter: brightness(.98);
+      }
     }
     .nav {
       display: flex;
@@ -375,8 +412,8 @@
 
     const questions = [
       { id: "q1", section: "案件範圍", title: "是否有身故前尚未申請的醫療保險金？", hint: "屬被保險人遺產。", options: yesNo() },
-      { id: "q2", section: "案件範圍", title: "被保險人是否有投保含「癌症身故金」的保單？", options: yesNo() },
-      { id: "q2_1", section: "案件範圍", title: "死亡證明書「直接原因」欄位是否載明癌症？", hint: "甲／乙／丙／丁任一欄位需載明癌症；不能只在「其他對於死亡有影響之疾病或身體狀況」。", options: yesNo(), show: a => a.q2 === "yes" },
+      { id: "q2_1", section: "案件範圍", title: "死亡證明書「直接原因」欄位是否載明癌症？", hint: "甲／乙／丙／丁任一欄位需載明癌症；不能只在「其他對於死亡有影響之疾病或身體狀況」。", options: yesNo() },
+      { id: "q2", section: "案件範圍", title: "被保險人是否有投保含「癌症身故金」的保單？", options: yesNo(), show: a => a.q2_1 === "yes" },
       { id: "q3", section: "案件範圍", title: "是否有未到期保費需退還？", hint: "屬要保人資產。", options: yesNo() },
       { id: "q3_1", section: "案件範圍", title: "退費金額是否在 5,000 元（含）以下？", options: yesNo(), show: a => a.q3 === "yes" },
       { id: "q3_heir_claim", section: "案件範圍", title: "未到期保費是否須由要保人之法定繼承人請領？", hint: "若要保人本人可直接請領，通常不需簡式推派同意書。", options: yesNo(), show: a => a.q1 === "no" && a.q3 === "yes" && a.q3_1 === "yes" },
@@ -442,11 +479,14 @@
       sectionLabel.textContent = q.section;
       backBtn.disabled = history.length === 0;
 
+      const optionsClass = q.id === "q6" ? "options currency-options" : (q.options.length === 2 ? "options two-options" : "options");
       main.innerHTML =
+        '<div class="prompt-area">' +
         '<div class="section-kicker">' + escapeHtml(q.section) + '</div>' +
         '<h2 class="question">' + escapeHtml(q.title) + '</h2>' +
         (q.hint ? '<p class="hint">' + escapeHtml(q.hint) + '</p>' : '') +
-        '<div class="options">' +
+        '</div>' +
+        '<div class="' + optionsClass + '">' +
         q.options.map(opt => '<button class="option" type="button" data-value="' + opt.value + '">' + escapeHtml(opt.label) + '</button>').join("") +
         '</div>';
 
@@ -454,6 +494,7 @@
         btn.addEventListener("click", () => {
           answers[q.id] = btn.dataset.value;
           if (q.id === "q1" && btn.dataset.value === "yes") answers.q7 = "yes";
+          btn.blur();
           history.push(q.id);
           const next = nextQuestionId(q.id);
           currentId = next;
@@ -498,8 +539,7 @@
         addDoc(groups, "案件情境", "推派同意書（正式）", "屬被保險人遺產，需全體繼承人簽署");
       }
 
-      if (a.q2 === "yes" && a.q2_1 === "yes") addDoc(groups, "案件情境", "癌症身故金請領文件", "符合癌症身故金請領，文件同身故保險金");
-      if (a.q2 === "yes" && a.q2_1 === "no") addDoc(groups, "案件情境", "癌症身故金檢核結果", "不符合癌症身故金請領");
+      if (a.q2_1 === "yes" && a.q2 === "yes") addDoc(groups, "案件情境", "癌症身故金請領文件", "符合癌症身故金請領，文件同身故保險金");
 
       if (a.q3 === "yes") {
         if (a.q1 === "no" && a.q3_1 === "yes") {
