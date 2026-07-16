@@ -77,6 +77,57 @@
       font: inherit;
       font-weight: 700;
     }
+    .gate-step {
+      display: grid;
+      gap: 12px;
+      margin-top: 16px;
+    }
+    .gate-step[hidden] { display: none; }
+    .gate-label {
+      color: var(--ink);
+      font-size: 14px;
+      font-weight: 900;
+    }
+    .partner-secret {
+      width: 100%;
+      min-height: 50px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--ink);
+      font: inherit;
+      font-weight: 700;
+    }
+    .gate-next {
+      width: 100%;
+      padding: 11px 14px;
+      background: var(--brand);
+      color: #fff;
+      font-weight: 900;
+    }
+    .gate-next:disabled {
+      opacity: .45;
+      cursor: not-allowed;
+    }
+    .secret-warning {
+      padding: 18px;
+      border: 2px solid #b42318;
+      border-radius: 10px;
+      background: #fff5f3;
+      text-align: center;
+    }
+    .secret-warning strong {
+      display: block;
+      margin-bottom: 8px;
+      color: #b42318;
+      font-size: 20px;
+    }
+    .secret-warning p {
+      color: #7a271a;
+      font-size: 17px;
+      font-weight: 900;
+    }
     .watermark {
       position: fixed;
       top: -20vh;
@@ -352,12 +403,14 @@
     .security-notice {
       padding: 18px 20px 22px;
       color: var(--muted);
-      font-size: 12px;
+      font-size: clamp(10px, 2.75vw, 12px);
       text-align: center;
     }
     .header-notice {
       margin-top: 16px;
-      padding: 12px 10px 0;
+      margin-right: -14px;
+      margin-left: -14px;
+      padding: 12px 0 0;
       border-top: 1px solid var(--line);
     }
     .app-footer {
@@ -366,12 +419,27 @@
     .security-notice[hidden] { display: none; }
     .security-name {
       color: var(--ink);
-      font-size: 16px;
+      font-size: clamp(13px, 3.6vw, 16px);
       font-weight: 900;
     }
     .security-notice p {
       margin: 3px 0 0;
-      text-wrap: balance;
+      line-height: 1.45;
+      white-space: nowrap;
+    }
+    @media (max-width: 360px) {
+      .security-notice {
+        padding-right: 6px;
+        padding-left: 6px;
+        font-size: 9px;
+      }
+      .header-notice {
+        margin-right: -16px;
+        margin-left: -16px;
+        padding-right: 0;
+        padding-left: 0;
+      }
+      .security-name { font-size: 12px; }
     }
     .print-cover {
       display: none;
@@ -491,11 +559,23 @@
 <body>
   <div class="partner-gate" id="partnerGate">
     <div class="partner-gate-card">
-      <h1>選擇明冠夥伴</h1>
-      <p>請選擇本人姓名後進入工具。</p>
-      <select class="partner-select" id="partnerSelect" aria-label="選擇明冠夥伴">
-        <option value="">請選擇本人姓名</option>
-      </select>
+      <div id="partnerEntry">
+        <h1>選擇明冠夥伴</h1>
+        <p>請選擇本人姓名並輸入明冠密語。</p>
+        <select class="partner-select" id="partnerSelect" aria-label="選擇明冠夥伴">
+          <option value="">請選擇本人姓名</option>
+        </select>
+        <div class="gate-step" id="secretEntry" hidden>
+          <label class="gate-label" for="secretInput">明冠密語</label>
+          <input class="partner-secret" id="secretInput" type="password" autocomplete="off" placeholder="請輸入明冠密語">
+          <button class="gate-next" id="secretNextBtn" type="button" disabled>下一步</button>
+        </div>
+      </div>
+      <div class="gate-step secret-warning" id="secretWarning" role="alert" hidden>
+        <strong>警示</strong>
+        <p>密碼若有誤將顯示嚴重錯誤內容</p>
+        <button class="gate-next" id="confirmWarningBtn" type="button">確認</button>
+      </div>
     </div>
   </div>
   <div class="app" id="app" hidden>
@@ -569,10 +649,17 @@
     let currentId = "q1";
     let history = [];
     let currentPartner = null;
+    let pendingPartner = null;
 
     const app = document.getElementById("app");
     const partnerGate = document.getElementById("partnerGate");
     const partnerSelect = document.getElementById("partnerSelect");
+    const partnerEntry = document.getElementById("partnerEntry");
+    const secretEntry = document.getElementById("secretEntry");
+    const secretInput = document.getElementById("secretInput");
+    const secretNextBtn = document.getElementById("secretNextBtn");
+    const secretWarning = document.getElementById("secretWarning");
+    const confirmWarningBtn = document.getElementById("confirmWarningBtn");
     const main = document.getElementById("main");
     const bar = document.getElementById("bar");
     const stepLabel = document.getElementById("stepLabel");
@@ -613,15 +700,33 @@
 
       const storedPartner = readStoredPartner();
       if (storedPartner) {
-        activatePartner(storedPartner);
-        return;
+        partnerSelect.value = storedPartner.code;
+        pendingPartner = storedPartner;
+        secretEntry.hidden = false;
       }
 
       partnerSelect.addEventListener("change", () => {
-        const partner = MINGGUAN_AUTHORIZED_PARTNERS.find(item => item.code === partnerSelect.value);
-        if (!partner) return;
-        try { localStorage.setItem(PARTNER_STORAGE_KEY, partner.code); } catch (err) {}
-        activatePartner(partner);
+        pendingPartner = MINGGUAN_AUTHORIZED_PARTNERS.find(item => item.code === partnerSelect.value) || null;
+        secretEntry.hidden = !pendingPartner;
+        secretInput.value = "";
+        secretNextBtn.disabled = true;
+      });
+
+      secretInput.addEventListener("input", () => {
+        secretNextBtn.disabled = !secretInput.value.trim();
+      });
+
+      secretNextBtn.addEventListener("click", () => {
+        if (!pendingPartner || !secretInput.value.trim()) return;
+        partnerEntry.hidden = true;
+        secretWarning.hidden = false;
+      });
+
+      confirmWarningBtn.addEventListener("click", () => {
+        if (!pendingPartner) return;
+        try { localStorage.setItem(PARTNER_STORAGE_KEY, pendingPartner.code); } catch (err) {}
+        secretInput.value = "";
+        activatePartner(pendingPartner);
       });
     }
 
@@ -1120,7 +1225,7 @@
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
         link.href = url;
-        link.download = "凱基人壽身故理賠所需表單.pdf";
+        link.download = "凱基人壽身故理賠所需表單_" + currentPartner.name + ".pdf";
         document.body.appendChild(link);
         link.click();
         link.remove();
